@@ -1,16 +1,21 @@
-namespace GrabExpressApi.SDK.Models;
+using System.Collections.Generic;
 
-public class DeliveryQuoteResponse
+namespace GrabExpressApi.SDK.Models
 {
-    public List<Quote> Quotes { get; set; } = new();
-    public string Currency { get; set; } = string.Empty;
-}
 
-public class Quote
-{
-    public string ServiceType { get; set; } = string.Empty;
-    public string VehicleType { get; set; } = string.Empty;
-    public decimal Amount { get; set; }
-    public int EstimatedTimeline { get; set; }
-    public decimal? Distance { get; set; }
+    public class DeliveryQuoteResponse
+    {
+        public List<Quote> Quotes { get; set; } = new List<Quote>();
+        public string Currency { get; set; } = string.Empty;
+    }
+
+    public class Quote
+    {
+        public string ServiceType { get; set; } = string.Empty;
+        public string VehicleType { get; set; } = string.Empty;
+        public decimal Amount { get; set; }
+        public int EstimatedTimeline { get; set; }
+        public decimal? Distance { get; set; }
+    }
+
 }

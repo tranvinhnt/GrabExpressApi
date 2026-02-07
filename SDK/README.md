@@ -190,7 +190,7 @@ catch (GrabExpressException ex)
 
 ## Dependencies
 
-- .NET 6.0 or higher
+- .NET Core 3.1 or higher
 - System.Net.Http
 - System.Text.Json
 

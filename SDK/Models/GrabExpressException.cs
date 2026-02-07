@@ -1,18 +1,23 @@
-namespace GrabExpressApi.SDK.Models;
+using System;
 
-public class GrabExpressException : Exception
+namespace GrabExpressApi.SDK.Models
 {
-    public int StatusCode { get; set; }
-    public string? ErrorCode { get; set; }
-    public string? ErrorMessage { get; set; }
 
-    public GrabExpressException(string message) : base(message) { }
-
-    public GrabExpressException(string message, int statusCode, string? errorCode = null, string? errorMessage = null)
-        : base(message)
+    public class GrabExpressException : Exception
     {
-        StatusCode = statusCode;
-        ErrorCode = errorCode;
-        ErrorMessage = errorMessage;
+        public int StatusCode { get; set; }
+        public string? ErrorCode { get; set; }
+        public string? ErrorMessage { get; set; }
+
+        public GrabExpressException(string message) : base(message) { }
+
+        public GrabExpressException(string message, int statusCode, string? errorCode = null, string? errorMessage = null)
+            : base(message)
+        {
+            StatusCode = statusCode;
+            ErrorCode = errorCode;
+            ErrorMessage = errorMessage;
+        }
     }
+
 }
