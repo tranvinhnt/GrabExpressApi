@@ -49,54 +49,62 @@ namespace GrabExpressApi.SDK
         /// </summary>
         private async Task<string> GetAccessTokenAsync()
         {
-            await _tokenLock.WaitAsync();
-            try
+            if (_config.accessToken != null && _config.accessToken != "")
             {
-                // Return cached token if still valid
-                if (!string.IsNullOrEmpty(_accessToken) && DateTime.UtcNow < _tokenExpiry)
+                _accessToken = _config.accessToken;
+                return _accessToken;
+            }
+            else
+            {
+                await _tokenLock.WaitAsync();
+                try
                 {
-                    return _accessToken;
-                }
+                    // Return cached token if still valid
+                    if (!string.IsNullOrEmpty(_accessToken) && DateTime.UtcNow < _tokenExpiry)
+                    {
+                        return _accessToken;
+                    }
 
-                using var tokenClient = new HttpClient();
-                var requestContent = new FormUrlEncodedContent(new[]
-                {
+                    using var tokenClient = new HttpClient();
+                    var requestContent = new FormUrlEncodedContent(new[]
+                    {
                     new KeyValuePair<string, string>("grant_type", "client_credentials"),
                     new KeyValuePair<string, string>("client_id", _config.ClientId),
                     new KeyValuePair<string, string>("client_secret", _config.ClientSecret),
                     new KeyValuePair<string, string>("scope", _config.Scope)
                 });
 
-                var response = await tokenClient.PostAsync(_config.TokenUrl, requestContent);
-                var content = await response.Content.ReadAsStringAsync();
+                    var response = await tokenClient.PostAsync(_config.TokenUrl, requestContent);
+                    var content = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new GrabExpressException(
-                        "Failed to authenticate with Grab API",
-                        (int)response.StatusCode,
-                        errorMessage: content
-                    );
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new GrabExpressException(
+                            "Failed to authenticate with Grab API",
+                            (int)response.StatusCode,
+                            errorMessage: content
+                        );
+                    }
+
+                    var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(content, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.Access_Token))
+                    {
+                        throw new GrabExpressException("Invalid token response from Grab API");
+                    }
+
+                    _accessToken = tokenResponse.Access_Token;
+                    _tokenExpiry = DateTime.UtcNow.AddSeconds(tokenResponse.Expires_In - 60); // Refresh 60 seconds early
+
+                    return _accessToken;
                 }
-
-                var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(content, new JsonSerializerOptions
+                finally
                 {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.Access_Token))
-                {
-                    throw new GrabExpressException("Invalid token response from Grab API");
+                    _tokenLock.Release();
                 }
-
-                _accessToken = tokenResponse.Access_Token;
-                _tokenExpiry = DateTime.UtcNow.AddSeconds(tokenResponse.Expires_In - 60); // Refresh 60 seconds early
-
-                return _accessToken;
-            }
-            finally
-            {
-                _tokenLock.Release();
             }
         }
 
@@ -129,7 +137,7 @@ namespace GrabExpressApi.SDK
             });
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("/v1/deliveries/quotes", content);
+            var response = await _httpClient.PostAsync("/grab-express-sandbox/v1/deliveries/quotes", content);
 
             return await HandleResponseAsync<DeliveryQuoteResponse>(response);
         }
@@ -154,7 +162,7 @@ namespace GrabExpressApi.SDK
             });
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("/v1/deliveries", content);
+            var response = await _httpClient.PostAsync("/grab-express-sandbox/v1/deliveries", content);
 
             return await HandleResponseAsync<DeliveryResponse>(response);
         }

@@ -1,16 +1,26 @@
+using Newtonsoft.Json;
+
 namespace GrabExpressApi.SDK.Models
 {
 
-    public class Package
+    public partial class Package
     {
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public int Quantity { get; set; }
-        public decimal Price { get; set; }
-        public Dimensions? Dimensions { get; set; }
-    }
+        [JsonProperty("name")]
+        public string Name { get; set; }
 
-    public class Dimensions
+        [JsonProperty("description")]
+        public string Description { get; set; }
+
+        [JsonProperty("quantity")]
+        public long Quantity { get; set; }
+
+        [JsonProperty("price")]
+        public long Price { get; set; }
+
+        [JsonProperty("dimensions")]
+        public Dimensions Dimensions { get; set; }
+    }
+    public partial class Dimensions
     {
         public double Height { get; set; }
         public double Width { get; set; }
