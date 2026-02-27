@@ -36,6 +36,10 @@ namespace GrabExpressApi.SDK.Models
         [JsonProperty("amount")]
         public long Amount { get; set; }
 
+
+        [JsonProperty("distance")]
+        public long distance { get; set; }
+
         [JsonProperty("estimatedTimeline")]
         public EstimatedTimeline EstimatedTimeline { get; set; }
     }
