@@ -27,9 +27,11 @@ namespace GrabExpressApi.SDK
         public GrabExpressClient(GrabExpressConfig config)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
+            var baseUrl = _config.BaseUrl;
+            if (!baseUrl.EndsWith("/")) baseUrl += "/";
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri(_config.BaseUrl)
+                BaseAddress = new Uri(baseUrl)
             };
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
@@ -38,7 +40,9 @@ namespace GrabExpressApi.SDK
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-            _httpClient.BaseAddress = new Uri(_config.BaseUrl);
+            var baseUrl = _config.BaseUrl;
+            if (!baseUrl.EndsWith("/")) baseUrl += "/";
+            _httpClient.BaseAddress = new Uri(baseUrl);
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
 
@@ -49,10 +53,9 @@ namespace GrabExpressApi.SDK
         /// </summary>
         private async Task<string> GetAccessTokenAsync()
         {
-            if (_config.accessToken != null && _config.accessToken != "")
+            if (!string.IsNullOrEmpty(_config.accessToken))
             {
-                _accessToken = _config.accessToken;
-                return _accessToken;
+                return _config.accessToken;
             }
             else
             {
@@ -137,7 +140,7 @@ namespace GrabExpressApi.SDK
             });
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("/grab-express-sandbox/v1/deliveries/quotes", content);
+            var response = await _httpClient.PostAsync("v1/deliveries/quotes", content);
 
             return await HandleResponseAsync<DeliveryQuoteResponse>(response);
         }
@@ -162,7 +165,7 @@ namespace GrabExpressApi.SDK
             });
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("/grab-express-sandbox/v1/deliveries", content);
+            var response = await _httpClient.PostAsync("v1/deliveries", content);
 
             return await HandleResponseAsync<DeliveryResponse>(response);
         }
@@ -183,7 +186,7 @@ namespace GrabExpressApi.SDK
 
             await EnsureAuthenticatedAsync();
 
-            var response = await _httpClient.GetAsync($"/v1/deliveries/{deliveryId}");
+            var response = await _httpClient.GetAsync($"v1/deliveries/{deliveryId}");
             return await HandleResponseAsync<DeliveryResponse>(response);
         }
 
@@ -202,7 +205,7 @@ namespace GrabExpressApi.SDK
 
             await EnsureAuthenticatedAsync();
 
-            var response = await _httpClient.DeleteAsync($"/v1/deliveries/{deliveryId}");
+            var response = await _httpClient.DeleteAsync($"v1/deliveries/{deliveryId}");
 
             if (!response.IsSuccessStatusCode)
             {
@@ -226,7 +229,7 @@ namespace GrabExpressApi.SDK
 
             await EnsureAuthenticatedAsync();
 
-            var response = await _httpClient.DeleteAsync($"/v1/merchant/deliveries/{merchantOrderId}");
+            var response = await _httpClient.DeleteAsync($"v1/merchant/deliveries/{merchantOrderId}");
 
             if (!response.IsSuccessStatusCode)
             {
@@ -259,7 +262,7 @@ namespace GrabExpressApi.SDK
             });
 
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync("/v1/deliveries/tip/submit", content);
+            var response = await _httpClient.PostAsync("v1/deliveries/tip/submit", content);
 
             return await HandleResponseAsync<SubmitTipResponse>(response);
         }
