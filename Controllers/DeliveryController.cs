@@ -11,13 +11,22 @@ namespace GrabExpressApi.Controllers
     [Route("api/[controller]")]
     public class DeliveryController : ControllerBase
     {
-        private readonly GrabExpressClient _grabClient;
+        private readonly GrabExpressProvider _provider;
         private readonly ILogger<DeliveryController> _logger;
 
-        public DeliveryController(GrabExpressClient grabClient, ILogger<DeliveryController> logger)
+        public DeliveryController(GrabExpressProvider provider, ILogger<DeliveryController> logger)
         {
-            _grabClient = grabClient;
+            _provider = provider;
             _logger = logger;
+        }
+
+        private GrabExpressClient GrabClient 
+        {
+            get
+            {
+                var env = Request.Headers["X-Grab-Env"].ToString();
+                return _provider.GetClient(env);
+            }
         }
 
         /// <summary>
@@ -28,7 +37,7 @@ namespace GrabExpressApi.Controllers
         {
             try
             {
-                var quotes = await _grabClient.GetDeliveryQuotesAsync(request);
+                var quotes = await GrabClient.GetDeliveryQuotesAsync(request);
                 return Ok(quotes);
             }
             catch (GrabExpressException ex)
@@ -46,7 +55,7 @@ namespace GrabExpressApi.Controllers
         {
             try
             {
-                var delivery = await _grabClient.CreateDeliveryAsync(request);
+                var delivery = await GrabClient.CreateDeliveryAsync(request);
                 return CreatedAtAction(nameof(GetDelivery), new { id = delivery.DeliveryID }, delivery);
             }
             catch (GrabExpressException ex)
@@ -64,7 +73,7 @@ namespace GrabExpressApi.Controllers
         {
             try
             {
-                var delivery = await _grabClient.GetDeliveryDetailsAsync(id);
+                var delivery = await GrabClient.GetDeliveryDetailsAsync(id);
                 return Ok(delivery);
             }
             catch (GrabExpressException ex)
@@ -82,7 +91,7 @@ namespace GrabExpressApi.Controllers
         {
             try
             {
-                await _grabClient.CancelDeliveryAsync(id);
+                await GrabClient.CancelDeliveryAsync(id);
                 return NoContent();
             }
             catch (GrabExpressException ex)
@@ -100,7 +109,7 @@ namespace GrabExpressApi.Controllers
         {
             try
             {
-                await _grabClient.CancelDeliveryByMerchantOrderIdAsync(merchantOrderId);
+                await GrabClient.CancelDeliveryByMerchantOrderIdAsync(merchantOrderId);
                 return NoContent();
             }
             catch (GrabExpressException ex)
@@ -118,7 +127,7 @@ namespace GrabExpressApi.Controllers
         {
             try
             {
-                var response = await _grabClient.SubmitTipAsync(request);
+                var response = await GrabClient.SubmitTipAsync(request);
                 return Ok(response);
             }
             catch (GrabExpressException ex)

@@ -6,7 +6,7 @@ namespace GrabExpressApi.SDK.Configuration
         public string ClientId { get; set; } = string.Empty;
         public string ClientSecret { get; set; } = string.Empty;
         public string? accessToken { get; set; }
-        public string Environment { get; set; } = "staging"; // "staging" or "production"
+        public string Environment { get; set; } = "production"; // "staging" or "production"
         public string? WebhookUrl { get; set; }
 
         public string BaseUrl => Environment.ToLower() == "production"

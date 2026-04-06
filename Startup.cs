@@ -32,16 +32,15 @@ namespace GrabExpressApi
                 });
             });
 
-            // Configure Grab Express SDK
-            var grabConfig = new GrabExpressConfig
-            {
-                ClientId = Configuration["GrabExpress:ClientId"] ?? string.Empty,
-                ClientSecret = Configuration["GrabExpress:ClientSecret"] ?? string.Empty,
-                Environment = Configuration["GrabExpress:Environment"] ?? "staging"
-            };
+            // Configure Grab Express SDK for multiple environments
+            services.Configure<GrabExpressConfig>("UAT", Configuration.GetSection("GrabExpress:UAT"));
+            services.Configure<GrabExpressConfig>("Production", Configuration.GetSection("GrabExpress:Production"));
 
-            services.AddSingleton(grabConfig);
-            services.AddSingleton<GrabExpressClient>();
+            services.AddSingleton<GrabExpressProvider>();
+            
+            // Register a default client for backward compatibility, resolving to Production by default
+            services.AddTransient<GrabExpressClient>(sp => 
+                sp.GetRequiredService<GrabExpressProvider>().GetClient("Production"));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
